@@ -43,22 +43,7 @@ class remote_fetch
 		app_logic_log::log($type,'timer',array('timer'=>$endtime-$starttime,'$url'=>$url));
 		return $result;
 	}
-	//put your code here
-	public static function getResultByPost($url='',$fields='')
-	{
-		$headers[] = 'Accept: */*';
-		$headers[] = "Authorization: Basic aGM6emFxMTJ3c1g=";
-		$ch = curl_init() ;
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true) ;
-		curl_setopt($ch, CURLOPT_URL,$url) ;
-		$timeout = 1;
-		curl_setopt($ch, CURLOPT_POST,$timeout) ;
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
-		$result = curl_exec($ch) ;
-		curl_close($ch) ;
-		return $result;
-
-	}
+	
 
 	public static function getRemoteResultByPost($url='',$fields='')
 	{
@@ -86,77 +71,7 @@ class remote_fetch
 		return $result;
 	}
 
-	public static function getRemoteResultByPost2($url='',$fields=array())
-	{
-		$str = '';
-		if(is_array($fields))
-		{
-                    foreach ($fields as $key=>$value)
-                    {
-                            $str.=$key.'='.$value.'&';
-                    }
-		}
-		app_logic_log::inportDataLog("postData", $str);
-		$s = system (" curl -d '".urlencode($str)."' '".$url."' ");		
-		return $s;
-	}
-
-        /**
-         *
-         * @param <type> $data
-         * @desc array('id'=>'1','media_from'=>'hexun'...)
-         */
-        public static function thriftToData($data=array())
-        {
-            include_once COMMENTS.'/packages/ArtificiallyNews/ArtificiallyNews_types.php';
-            include_once COMMENTS.'/packages/ArtificiallyNews/ArtificiallyNewsOperatorServices.php';
-            $tmpKey = (WP_ENV == 'local') ? 'remote' : 'remote_'.WP_ENV;
-            $thrif_server_url = app_config::get_config($tmpKey,'THRIFT_SERVER_URL');  
-            try
-            {
-                $socket = new TSocket($thrif_server_url, 8198);  
-//                $socket->setSendTimeout(5000);
-//                $socket->setRecvTimeout(5000);
-                $transport = new TBufferedTransport($socket, 1024, 1024);
-                $transport->open();
-                $protocol = new TBinaryProtocol($transport);
-                $client= new ArtificiallyNewsOperatorServicesClient($protocol, $protocol);
-                app_logic_log::log('data','thrift',$data);
-                $obj = new NewsArtificiallyModel($data);
-                $result = $client->indexNews($obj);  
-                app_logic_log::log('data_over','thrift',array('result'=>$result));
-                $transport->close();
-                return $result;
-            }
-            catch (Exception $e)
-            {
-                app_logic_log::log('Exception','thrift',array('result'=> $e->getMessage()));
-//                echo 'Exception: <b>' . $e->getMessage() . '</b>';
-//                exit();
-            }          
-     
-        }
-         /**
-         *
-         * @param <type> $data
-         * @desc array('id'=>'1','media_from'=>'hexun'...)
-         */
-        public static function thriftDelData($id){
-            include_once COMMENTS.'/packages/ArtificiallyNews/ArtificiallyNews_types.php';
-            include_once COMMENTS.'/packages/ArtificiallyNews/ArtificiallyNewsOperatorServices.php';
-            $tmpKey = (WP_ENV == 'local') ? 'remote' : 'remote_'.WP_ENV;
-            $thrif_server_url = app_config::get_config($tmpKey,'THRIFT_SERVER_URL');
-            $socket = new TSocket($thrif_server_url, 8198, 50000);
-            $socket->setSendTimeout(5000);
-            $socket->setRecvTimeout(5000);
-            $transport = new TBufferedTransport($socket, 1024, 1024);
-            $transport->open();
-            $protocol = new TBinaryProtocol($transport);
-            $client= new ArtificiallyNewsOperatorServicesClient($protocol, $protocol);
-            $result = $client->deleteArtificiallyNews($id);
-            $transport->close();
-        }
-
+	
 
 }
 ?>
